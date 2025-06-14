@@ -6,7 +6,7 @@ import scalikejdbc._
 import java.time.OffsetDateTime
 import scala.collection.IndexedSeq.iterableFactory
 
-object HubMessageDeleteQueueWriter {
+object MessageDeleteQueueWriter {
   private val column = HubMessageDeleteQueue.column
 
   def write(rows: List[HubMessageDeleteQueue])(session: DBSession): Unit = {

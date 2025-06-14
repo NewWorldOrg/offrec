@@ -1,4 +1,4 @@
-package berner.model.hub
+package offrec.model
 
 import scalikejdbc._
 

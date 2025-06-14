@@ -3,7 +3,7 @@ package berner.database
 import berner.model.hub.{HubMessageDeleteQueue, HubMessageMapping}
 import scalikejdbc._
 
-object HubMessageDeleteQueueReader {
+object MessageDeleteQueueReader {
   private val hmdq = HubMessageDeleteQueue.syntax("hmdq")
   private val hmm = HubMessageMapping.syntax("hmm")
 
