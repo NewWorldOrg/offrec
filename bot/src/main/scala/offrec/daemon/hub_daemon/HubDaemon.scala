@@ -1,0 +1,44 @@
+package offrec.daemon.hub_daemon
+
+import offrec.feature.archiver.ArchiverListenerAdapter
+import offrec.feature.hub.HubListenerAdapter
+import offrec.feature.init_slash_command.InitSlashCommandListenerAdapter
+import offrec.feature.ping.PingListenerAdapter
+import cats.effect.IO
+import net.dv8tion.jda.api.requests.GatewayIntent
+import net.dv8tion.jda.api.{JDA, JDABuilder}
+
+object HubDaemon {
+  def task(discordBotToken: String): IO[Unit] = {
+    (for {
+      jda <- preExecute(discordBotToken)
+      _ <- execute(jda)
+      _ <- postExecute()
+    } yield ()).foreverM
+  }
+
+  private def preExecute(discordBotToken: String): IO[JDA] = IO {
+    JDABuilder
+      .createDefault(discordBotToken)
+      .enableIntents(GatewayIntent.MESSAGE_CONTENT)
+      .enableIntents(GatewayIntent.GUILD_WEBHOOKS)
+      .enableIntents(GatewayIntent.GUILD_MESSAGES)
+      .addEventListeners(new InitSlashCommandListenerAdapter)
+      .addEventListeners(new HubListenerAdapter)
+      .addEventListeners(new ArchiverListenerAdapter)
+      .addEventListeners(new PingListenerAdapter)
+      .build()
+  }
+
+  private def execute(jda: JDA): IO[Boolean] = {
+    IO {
+      jda.awaitShutdown()
+    }.guarantee(IO {
+      val client = jda.getHttpClient
+      client.connectionPool.evictAll()
+      client.dispatcher.executorService.shutdown()
+    })
+  }
+
+  private def postExecute(): IO[Unit] = IO {}
+}

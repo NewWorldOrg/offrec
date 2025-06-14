@@ -3,8 +3,8 @@ lazy val baseSettings = Seq(
   name := "offrect",
   version := git.gitCurrentTags.value.headOption.getOrElse("0.0.0-SNAPSHOT"),
   organization := "io.github.stoneream",
-  homepage := Some(url("https://github.com/stoneream/berner")),
-  licenses := List("MIT License" -> url("https://github.com/stoneream/berner/blob/main/LICENSE")),
+  homepage := Some(url("https://github.com/NewWorldOrg/offrec")),
+  licenses := List("MIT License" -> url("https://github.com/NewWorldOrg/offrec/blob/main/LICENSE")),
   developers := List(
     Developer(
       "stoneream",
@@ -48,14 +48,14 @@ lazy val root = (project in file("."))
 lazy val logging = (project in file("logging"))
   .settings(baseSettings)
   .settings(
-    name := "berner-logging",
+    name := "offrec-logging",
     libraryDependencies ++= Dependencies.logging
   )
 
 lazy val bot = (project in file("bot"))
   .settings(baseSettings)
   .settings(
-    name := "berner-bot",
+    name := "offrec-bot",
     libraryDependencies ++= Dependencies.bot,
     fork := true
   )
