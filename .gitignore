@@ -1,0 +1,12 @@
+target/
+.idea
+.bsp
+.metals
+.vscode
+application.conf
+.run
+db/report.html
+db/report.json
+logs
+.bloop
+
