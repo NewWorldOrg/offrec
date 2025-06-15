@@ -60,6 +60,5 @@ class MessageMonitoringListenerAdapter extends ListenerAdapter with Logger {
 }
 
 object MessageMonitoringListenerAdapter {
-//  val defaultTtl: Int = 86400 // 1day
-  val defaultTtl = 30 // 30 seconds
+  val defaultTtl: Int = 86400 // 1day
 }
