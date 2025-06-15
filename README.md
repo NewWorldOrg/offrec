@@ -36,7 +36,7 @@ tbd
 
 ![memo1](./memo1.png)
 
-![memo2](./memo2.png)
+tbd
 
 ## 環境変数
 
