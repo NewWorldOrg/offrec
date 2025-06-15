@@ -6,11 +6,11 @@ import java.time.OffsetDateTime
 
 case class MessageDeleteQueue(
     id: Long,
-    guildId: String,       // サーバーID
-    channelId: String,     // チャンネルID
-    messageId: String,     // メッセージID
-    ttl: Int,              // メッセージ削除までの時間（秒）
-    status: Int,           // 0: pending, 1: completed, 2: failed
+    guildId: String, // サーバーID
+    channelId: String, // チャンネルID
+    messageId: String, // メッセージID
+    ttl: Int, // メッセージ削除までの時間（秒）
+    status: Int, // 0: pending, 1: completed, 2: failed
     createdAt: OffsetDateTime,
     updatedAt: OffsetDateTime,
     deletedAt: Option[OffsetDateTime]

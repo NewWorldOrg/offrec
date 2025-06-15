@@ -14,7 +14,7 @@ case class Channel(
 )
 
 object Channel extends SQLSyntaxSupport[Channel] {
-  override def tableName: String = "message_delete_queue"
+  override def tableName: String = "channel"
 
   def apply(rn: ResultName[Channel])(rs: WrappedResultSet): Channel = autoConstruct(rs, rn)
 }

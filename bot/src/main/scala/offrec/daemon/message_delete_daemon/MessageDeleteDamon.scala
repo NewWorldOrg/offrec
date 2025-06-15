@@ -1,15 +1,8 @@
 package offrec.daemon.message_delete_daemon
 
-import offrec.database.{HubMessageDeleteQueueReader, HubMessageDeleteQueueWriter}
 import offrec.logging.Logger
 import cats.effect.IO
-import net.dv8tion.jda.api.entities.channel.concrete.TextChannel
 import net.dv8tion.jda.api.{JDA, JDABuilder}
-import scalikejdbc.DB
-
-import java.time.OffsetDateTime
-import scala.concurrent.duration.DurationInt
-import scala.util.control.Exception.allCatch
 
 object MessageDeleteDamon extends Logger {
   def task(discordBotToken: String): IO[Unit] = {
@@ -29,6 +22,7 @@ object MessageDeleteDamon extends Logger {
   }
 
   private def execute(jda: JDA): IO[Unit] = {
+    /*
     val deleteTask = IO {
       // 100件ずつ取得して削除
       val rows = DB.localTx { s => HubMessageDeleteQueueReader.pendings(limit = 100)(s) }
@@ -78,6 +72,9 @@ object MessageDeleteDamon extends Logger {
     val waitTask = IO.sleep(15.seconds)
 
     (deleteTask *> waitTask).foreverM
+
+     */
+    ???
   }
 
   private def postExecute(): IO[Unit] = IO {}
