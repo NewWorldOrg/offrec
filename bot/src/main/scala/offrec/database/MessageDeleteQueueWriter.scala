@@ -13,4 +13,24 @@ object MessageDeleteQueueWriter {
       VALUES (${guildId}, ${channelId}, ${messageId}, ${ttl}, 0, ${now}, ${now})
     """.updateAndReturnGeneratedKey.apply()
   }
+
+  def markCompleted(queueIds: List[Long])(implicit session: DBSession): Int = {
+    val now = OffsetDateTime.now()
+
+    sql"""
+      UPDATE message_delete_queue
+      SET status = 1, updated_at = ${now}
+      WHERE id IN (${queueIds})
+    """.update.apply()
+  }
+
+  def markFailed(queueIds: List[Long])(implicit session: DBSession): Int = {
+    val now = OffsetDateTime.now()
+
+    sql"""
+      UPDATE message_delete_queue
+      SET status = 2, updated_at = ${now}
+      WHERE id IN (${queueIds})
+    """.update.apply()
+  }
 }

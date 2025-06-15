@@ -1,8 +1,14 @@
 package offrec.daemon.message_delete_daemon
 
-import offrec.logging.Logger
 import cats.effect.IO
+import net.dv8tion.jda.api.entities.channel.concrete.TextChannel
 import net.dv8tion.jda.api.{JDA, JDABuilder}
+import offrec.database.{MessageDeleteQueueReader, MessageDeleteQueueWriter}
+import offrec.logging.Logger
+import scalikejdbc.DB
+
+import scala.concurrent.duration._
+import scala.util.control.Exception.allCatch
 
 object MessageDeleteDamon extends Logger {
   def task(discordBotToken: String): IO[Unit] = {
@@ -10,7 +16,7 @@ object MessageDeleteDamon extends Logger {
       jda <- preExecute(discordBotToken)
       _ <- execute(jda).handleErrorWith { e =>
         IO {
-          logger.error("メッセージ削除処理中にエラーが発生しました。", e)
+          logger.error("Error occurred during message deletion process", e)
         }
       }
       _ <- postExecute()
@@ -22,47 +28,41 @@ object MessageDeleteDamon extends Logger {
   }
 
   private def execute(jda: JDA): IO[Unit] = {
-    /*
     val deleteTask = IO {
-      // 100件ずつ取得して削除
-      val rows = DB.localTx { s => HubMessageDeleteQueueReader.pendings(limit = 100)(s) }
+      val rows = DB.readOnly { implicit s => MessageDeleteQueueReader.pendings(limit = 100) }
 
-      if (rows.isEmpty) {
-        // do nothing
-      } else {
-        logger.info(s"削除対象のメッセージを取得しました。(${rows.size})")
+      if (rows.isEmpty) {} else {
+        logger.info("Deletion target messages retrieved", kv("count", rows.size))
 
         val groupedRows = rows
-          .groupBy { case (_, hmm) => hmm.guildId } // サーバーごとにグルーピング
-          .map { case (guildId, rows) => (guildId, rows.groupBy(_._2.hubGuildMessageChannelId)) } // ハブチャンネルごとにグルーピング
+          .groupBy(_.guildId)
+          .map { case (guildId, queues) => (guildId, queues.groupBy(_.channelId)) }
 
-        groupedRows.foreach { case (guildId, hub) =>
-          hub.foreach { case (hubMessageChannelId, queue) =>
-            val messageIds = queue.map(_._2.hubMessageId)
-            val queueIds = queue.map(_._1.id)
+        groupedRows.foreach { case (guildId, channels) =>
+          channels.foreach { case (channelId, queues) =>
+            val messageIds = queues.map(_.messageId)
+            val queueIds = queues.map(_.id)
 
             allCatch.either {
               for {
                 guild <- Option(jda.getGuildById(guildId))
-                hubChannel <- Option(guild.getChannelById(classOf[TextChannel], hubMessageChannelId))
+                channel <- Option(guild.getChannelById(classOf[TextChannel], channelId))
               } yield {
                 messageIds.foreach { id =>
-                  hubChannel.deleteMessageById(id).complete()
-                  Thread.sleep(250) // 雑にスリープ...
+                  channel.deleteMessageById(id).complete()
+                  Thread.sleep(250)
                 }
               }
-            } match { // 削除結果に応じてDBのステータスを更新
+            } match {
               case Left(e) =>
-                logger.error(s"メッセージの削除中にエラーが発生しました。${messageIds.size}", e)
-                val now = OffsetDateTime.now()
-                DB.localTx { s =>
-                  HubMessageDeleteQueueWriter.markFailedByMessageIds(queueIds, now)(s)
+                logger.error("Failed to delete messages", kv("guildId", guildId), kv("channelId", channelId), kv("count", messageIds.size), e)
+                DB.localTx { implicit s =>
+                  MessageDeleteQueueWriter.markFailed(queueIds)
                 }
               case Right(_) =>
-                logger.info(s"メッセージを削除しました。(${messageIds.size})")
-                val now = OffsetDateTime.now()
-                DB.localTx { s =>
-                  HubMessageDeleteQueueWriter.markDeleteByMessageIds(queueIds, now)(s)
+                logger.info("Messages deleted", kv("guildId", guildId), kv("channelId", channelId), kv("count", messageIds.size))
+                DB.localTx { implicit s =>
+                  MessageDeleteQueueWriter.markCompleted(queueIds)
                 }
             }
           }
@@ -72,9 +72,6 @@ object MessageDeleteDamon extends Logger {
     val waitTask = IO.sleep(15.seconds)
 
     (deleteTask *> waitTask).foreverM
-
-     */
-    ???
   }
 
   private def postExecute(): IO[Unit] = IO {}
