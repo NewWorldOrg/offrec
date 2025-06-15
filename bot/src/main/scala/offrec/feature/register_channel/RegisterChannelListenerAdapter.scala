@@ -74,11 +74,11 @@ class RegisterChannelListenerAdapter extends ListenerAdapter with Logger {
             DB.localTx { implicit session =>
               ChannelReader.findByGuildAndChannel(guildId, selectedChannelId) match {
                 case Some(_) =>
-                  logger.info(s"Channel already exists: guildId=$guildId, channelId=$selectedChannelId")
+                  logger.info("Channel already exists (? ?)", kv("guildId", guildId), kv("channelId", selectedChannelId))
                   "既に登録済みのチャンネルです。"
                 case None =>
                   ChannelWriter.create(guildId, selectedChannelId)
-                  logger.info(s"Channel registered: guildId=$guildId, channelId=$selectedChannelId")
+                  logger.info("Channel registered (? ?)", kv("guildId", guildId), kv("channelId", selectedChannelId))
                   s"$channelName にキーが登録されました。"
               }
             }
@@ -86,7 +86,7 @@ class RegisterChannelListenerAdapter extends ListenerAdapter with Logger {
             case Success(message) =>
               event.reply(message).setEphemeral(true).queue()
             case Failure(exception) =>
-              logger.error(s"Failed to register channel: ${exception.getMessage}", exception)
+              logger.error("Failed to register channel (? ?)", kv("guildId", guildId), kv("channelId", selectedChannelId), exception)
               event.reply("チャンネル登録に失敗しました。").setEphemeral(true).queue()
           }
 
