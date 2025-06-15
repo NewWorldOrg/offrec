@@ -1,0 +1,23 @@
+services:
+  mariadb:
+    image: mariadb:11.0.2
+    env_file: ./docker/dev.env
+    volumes:
+      - offrec-data:/var/lib/mysql
+    ports:
+      - 127.0.0.1:23306:3306
+  flyway:
+    image: flyway/flyway:10.13-alpine
+    volumes:
+      - ./db/migration:/flyway/sql
+    command: >
+      -url=jdbc:mariadb://mariadb:3306
+      -schemas=dev_offrec
+      -connectRetries=60
+      -user=root
+      -password=
+      migrate
+    depends_on:
+      - mariadb
+volumes:
+  offrec-data:

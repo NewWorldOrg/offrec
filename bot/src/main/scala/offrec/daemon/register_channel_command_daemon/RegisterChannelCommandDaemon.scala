@@ -4,6 +4,7 @@ import cats.effect.IO
 import net.dv8tion.jda.api.requests.GatewayIntent
 import net.dv8tion.jda.api.{JDA, JDABuilder}
 import offrec.feature.init_slash_command.InitSlashCommandListenerAdapter
+import offrec.feature.message_monitoring.MessageMonitoringListenerAdapter
 import offrec.feature.register_channel.RegisterChannelListenerAdapter
 
 object RegisterChannelCommandDaemon {
@@ -21,6 +22,7 @@ object RegisterChannelCommandDaemon {
       .enableIntents(GatewayIntent.MESSAGE_CONTENT)
       .enableIntents(GatewayIntent.GUILD_MESSAGES)
       .addEventListeners(new RegisterChannelListenerAdapter)
+      .addEventListeners(new MessageMonitoringListenerAdapter)
       .addEventListeners(new InitSlashCommandListenerAdapter) // 面倒なのでここで初期化する
       .build()
   }
