@@ -34,7 +34,7 @@ class MessageMonitoringListenerAdapter extends ListenerAdapter with Logger {
         } match {
           case Success(queueId) =>
             logger.info(
-              "Message queued for deletion (? ? ? ? ?)",
+              "Message queued for deletion",
               kv("queueId", queueId),
               kv("messageId", messageId),
               kv("guildId", guildId),
@@ -43,7 +43,7 @@ class MessageMonitoringListenerAdapter extends ListenerAdapter with Logger {
             )
           case Failure(exception) =>
             logger.error(
-              "Failed to queue message for deletion (? ? ?)",
+              "Failed to queue message for deletion",
               kv("messageId", messageId),
               kv("guildId", guildId),
               kv("channelId", channelId),
@@ -54,7 +54,7 @@ class MessageMonitoringListenerAdapter extends ListenerAdapter with Logger {
       // チャンネルが監視対象でない場合は何もしない
 
       case Failure(exception) =>
-        logger.error("Failed to check if channel is monitored (? ?)", kv("guildId", guildId), kv("channelId", channelId), exception)
+        logger.error("Failed to check if channel is monitored", kv("guildId", guildId), kv("channelId", channelId), exception)
     }
   }
 }
