@@ -9,7 +9,7 @@ object MessageDeleteQueueReader {
   def pendings(limit: Int)(implicit session: DBSession): List[MessageDeleteQueue] = {
     val mdq = MessageDeleteQueue.syntax("mdq")
     val now = OffsetDateTime.now()
-    
+
     sql"""
       SELECT ${mdq.result.*}
       FROM ${MessageDeleteQueue.as(mdq)}
