@@ -16,8 +16,8 @@ object Dependencies {
 
   // logging
   lazy val logging: Seq[ModuleID] = Seq(
-    "ch.qos.logback" % "logback-classic" % "1.5.6",
-    "net.logstash.logback" % "logstash-logback-encoder" % "8.0"
+    "ch.qos.logback" % "logback-classic" % "1.5.18",
+    "net.logstash.logback" % "logstash-logback-encoder" % "8.1"
   )
 
   // config
