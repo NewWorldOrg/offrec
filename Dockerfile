@@ -1,4 +1,4 @@
-FROM eclipse-temurin:17-jdk
+FROM azul/zulu-openjdk:17-jdk-crac-latest
 
 ARG SBT_VERSION=1.10.0
 
