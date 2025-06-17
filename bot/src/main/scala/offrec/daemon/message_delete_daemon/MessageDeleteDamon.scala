@@ -71,7 +71,7 @@ object MessageDeleteDamon extends Logger {
     }
     val waitTask = IO.sleep(15.seconds)
 
-    (deleteTask *> waitTask).foreverM
+    deleteTask *> waitTask
   }
 
   private def postExecute(): IO[Unit] = IO {}
