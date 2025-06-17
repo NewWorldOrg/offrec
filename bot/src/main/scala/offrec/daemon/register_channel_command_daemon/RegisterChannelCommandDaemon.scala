@@ -3,6 +3,7 @@ package offrec.daemon.register_channel_command_daemon
 import cats.effect.IO
 import net.dv8tion.jda.api.requests.GatewayIntent
 import net.dv8tion.jda.api.{JDA, JDABuilder}
+import offrec.feature.cleanup.CleanupHistoryListenerAdapter
 import offrec.feature.init_slash_command.InitSlashCommandListenerAdapter
 import offrec.feature.message_monitoring.MessageMonitoringListenerAdapter
 import offrec.feature.register_channel.RegisterChannelListenerAdapter
@@ -23,6 +24,7 @@ object RegisterChannelCommandDaemon {
       .enableIntents(GatewayIntent.GUILD_MESSAGES)
       .addEventListeners(new RegisterChannelListenerAdapter)
       .addEventListeners(new MessageMonitoringListenerAdapter)
+      .addEventListeners(new CleanupHistoryListenerAdapter)
       .addEventListeners(new InitSlashCommandListenerAdapter) // 面倒なのでここで初期化する
       .build()
   }
