@@ -10,7 +10,6 @@ import offrec.logging.Logger
 import scalikejdbc.DB
 
 import scala.jdk.CollectionConverters._
-import scala.util.{Failure, Success, Try}
 
 class CleanupHistoryListenerAdapter extends ListenerAdapter with Logger {
   private val channelSelectCustomId = "offrec-cleanup-select-channel"
@@ -76,37 +75,34 @@ class CleanupHistoryListenerAdapter extends ListenerAdapter with Logger {
           return
         }
 
+        // TODO 直近100件のみ消えるのでいずれループで全消しする
         val messages = selectedChannel.getHistory.retrievePast(CleanupHistoryListenerAdapter.defaultLimit).complete().asScala.toList
-        var queued = 0
+        val messageIds = messages.map(_.getId)
 
-        messages.foreach { msg =>
-          Try {
+        messageIds match {
+          case ls =>
             DB.localTx { implicit session =>
-              MessageDeleteQueueWriter.create(guildId, selectedChannelId, msg.getId, 0)
-            }
-          } match {
-            case Success(_) => queued += 1
-            case Failure(exception) =>
-              logger.error(
-                "Failed to queue history message for deletion",
-                kv("messageId", msg.getId),
-                kv("guildId", guildId),
-                kv("channelId", selectedChannelId),
-                exception
+              MessageDeleteQueueWriter.create(
+                guildId = guildId,
+                channelId = selectedChannelId,
+                messageIds = ls,
+                ttl = 0
               )
-          }
-        }
+            }
+            logger.info(
+              "Cleanup history queued",
+              kv("guildId", guildId),
+              kv("channelId", selectedChannelId),
+              kv("count", ls.size)
+            )
 
-        logger.info(
-          "Cleanup history queued",
-          kv("guildId", guildId),
-          kv("channelId", selectedChannelId),
-          kv("count", queued)
-        )
-        event
-          .reply(s"$channelName の最新 ${queued} 件のメッセージを削除対象に登録しました。")
-          .setEphemeral(true)
-          .queue()
+            event
+              .reply(s"$channelName の最新 ${ls.size} 件のメッセージを削除対象に登録しました。")
+              .setEphemeral(true)
+              .queue()
+          case Nil =>
+            event.reply(s"$channelName にはメッセージがありませんでした。").setEphemeral(true).queue()
+        }
       case _ =>
         event.reply("複数のチャンネルが選択されました。1つだけ選択してください。").setEphemeral(true).queue()
     }
