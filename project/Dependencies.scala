@@ -42,9 +42,7 @@ object Dependencies {
 
   // database
   lazy val mariadb: Seq[ModuleID] = Seq(
-    "org.mariadb.jdbc" % "mariadb-java-client" % "3.4.1" excludeAll (
-      ExclusionRule("org.slf4j", "jcl-over-slf4j") // 依存がぶつかるので除外
-    )
+    "com.mysql" % "mysql-connector-j" % "9.3.0"
   )
 
   val scalikejdbcVersion = "4.3.0"
