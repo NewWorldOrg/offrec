@@ -10,4 +10,4 @@ db/report.json
 logs
 .bloop
 .env
-
+.envrc
