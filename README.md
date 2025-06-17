@@ -30,6 +30,7 @@ Discordサーバー内の指定チャンネルでメッセージの自動削除�
 ### require
 
 - [Command-line - Command-line tool - Flyway by Redgate • Database Migrations Made Easy.](https://flywaydb.org/documentation/usage/commandline/)
+- [Task](https://taskfile.dev/)
 
 ## 手順
 
