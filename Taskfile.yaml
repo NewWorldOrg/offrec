@@ -1,0 +1,19 @@
+version: '3'
+
+tasks:
+  init:
+    cmd: cp .env.example .env
+  docker_build:
+    cmd: docker compose build --no-cache
+  up:
+    cmd: docker compose up -d
+  down:
+    cmd: docker compose down
+  stop:
+    cmd: docker compose stop
+  bash:
+    cmd: docker compose exec sbt bash
+  compile:
+    cmd: docker compose exec sbt sbt compile
+  run:
+    cmd: docker compose exec sbt sbt bot/run

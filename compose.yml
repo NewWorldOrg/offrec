@@ -1,0 +1,44 @@
+services:
+  sbt:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - .:/code
+    command: bash
+    tty: true
+    environment:
+      OFFREC_DISCORD_TOKEN: ${OFFREC_DISCORD_TOKEN}
+      OFFREC_DB_DEFAULT_HOST: db
+      OFFREC_DB_DEFAULT_PORT: 3306
+      OFFREC_DB_DEFAULT_NAME: ${DB_DATABASE}
+      OFFREC_DB_DEFAULT_USER: root
+      OFFREC_DB_DEFAULT_PASSWORD: ${DB_PASSWORD}
+      OFFREC_LOG_PATH: ${OFFREC_LOG_PATH:-logs}}
+  db:
+    image: mysql:8.1
+    volumes:
+      - offrec-data:/var/lib/mysql
+    environment:
+      - MYSQL_DATABASE=${DB_DATABASE}
+      - MYSQL_ROOT_PASSWORD=${DB_PASSWORD}
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_bin
+    ports:
+      - 127.0.0.1:3306:3306
+    healthcheck:
+      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost" ]
+  flyway:
+    image: flyway/flyway:11.9-alpine
+    volumes:
+      - ./db/migration:/flyway/sql
+    command: >
+      -url=jdbc:mysql://db:3306?allowPublicKeyRetrieval=true
+      -schemas=dev_offrec
+      -connectRetries=60
+      -user=root
+      -password=${DB_PASSWORD}
+      migrate
+    depends_on:
+      - db
+volumes:
+  offrec-data:
