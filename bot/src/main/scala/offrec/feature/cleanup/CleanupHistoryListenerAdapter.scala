@@ -118,4 +118,3 @@ object CleanupHistoryListenerAdapter {
   val slashCommandDescription = "過去のメッセージを一括で削除キューに登録します。"
   val defaultLimit: Int = 100
 }
-

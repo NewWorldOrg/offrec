@@ -1,7 +1,22 @@
 services:
+  sbt:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - .:/code
+    command: bash
+    tty: true
+    environment:
+      OFFREC_DISCORD_TOKEN: ${OFFREC_DISCORD_TOKEN}
+      OFFREC_DB_DEFAULT_HOST: mariadb
+      OFFREC_DB_DEFAULT_PORT: 3306
+      OFFREC_DB_DEFAULT_NAME: ${MARIADB_DATABASE}
+      OFFREC_DB_DEFAULT_USER: root
+      OFFREC_DB_DEFAULT_PASSWORD: ${MARIADB_RANDOM_ROOT_PASSWORD}
+      OFFREC_LOG_PATH: ${OFFREC_LOG_PATH:-logs}}
   mariadb:
     image: mariadb:11.0.2
-    env_file: ./docker/dev.env
     volumes:
       - offrec-data:/var/lib/mysql
     ports:
