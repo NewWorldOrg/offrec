@@ -8,6 +8,7 @@ import offrec.logging.Logger
 import scalikejdbc.DB
 
 import scala.concurrent.duration._
+import scala.jdk.CollectionConverters._
 import scala.util.control.Exception.allCatch
 
 object MessageDeleteDamon extends Logger {
@@ -42,7 +43,7 @@ object MessageDeleteDamon extends Logger {
 
         groupedRows.foreach { case (guildId, channels) =>
           channels.foreach { case (channelId, queues) =>
-            val messageIds = queues.map(_.messageId)
+            val messageIds = queues.map(_.messageId).asJava
             val queueIds = queues.map(_.id)
 
             allCatch.either {
@@ -50,9 +51,7 @@ object MessageDeleteDamon extends Logger {
                 guild <- Option(jda.getGuildById(guildId))
                 channel <- Option(guild.getChannelById(classOf[TextChannel], channelId))
               } yield {
-                messageIds.foreach { id =>
-                  channel.deleteMessageById(id).queue()
-                }
+                channel.deleteMessagesByIds(messageIds).complete()
               }
             } match {
               case Left(e) =>
