@@ -1,6 +1,7 @@
 package offrec.bot
 
 import cats.effect.{ExitCode, IO, IOApp}
+import cats.implicits.catsSyntaxParallelSequence_
 import com.typesafe.config.ConfigFactory
 import offrec.daemon.message_delete_daemon.MessageDeleteDamon
 import offrec.daemon.ping_daemon.PingDaemon
@@ -27,21 +28,11 @@ object Main extends IOApp with Logger {
       registerChannelCommandDaemonFiber <- RegisterChannelCommandDaemon.task(discordBotToken).start
       messageDeleteDamonFiber <- MessageDeleteDamon.task(discordBotToken).start
       pingDaemonFiber <- PingDaemon.task(discordBotToken).start
-      _ <- registerChannelCommandDaemonFiber.join.guarantee {
-        IO {
-          logger.info("Shutting down register channel command daemon...")
-        }
-      }
-      _ <- messageDeleteDamonFiber.join.guarantee {
-        IO {
-          logger.info("Shutting down message delete daemon...")
-        }
-      }
-      _ <- pingDaemonFiber.join.guarantee {
-        IO {
-          logger.info("Shutting down ping daemon...")
-        }
-      }
+      _ <- List(
+        registerChannelCommandDaemonFiber.join.guarantee(IO(logger.info("Shutting down register channel command daemon..."))),
+        messageDeleteDamonFiber.join.guarantee(IO(logger.info("Shutting down message delete daemon..."))),
+        pingDaemonFiber.join.guarantee(IO(logger.info("Shutting down ping daemon...")))
+      ).parSequence_
     } yield ()).guarantee(closeDB).as(ExitCode.Success)
   }
 }

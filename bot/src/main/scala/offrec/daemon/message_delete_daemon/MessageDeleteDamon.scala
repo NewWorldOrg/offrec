@@ -18,7 +18,7 @@ object MessageDeleteDamon extends Logger {
         IO {
           logger.error("Error occurred during message deletion process", e)
         }
-      }
+      }.foreverM
       _ <- postExecute(jda)
     } yield ()).foreverM
   }
@@ -71,7 +71,7 @@ object MessageDeleteDamon extends Logger {
     }
     val waitTask = IO.sleep(15.seconds)
 
-    (deleteTask *> waitTask).foreverM
+    deleteTask *> waitTask
 
   }
 
