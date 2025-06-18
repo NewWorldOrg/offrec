@@ -10,7 +10,7 @@ object PingDaemon {
     (for {
       jda <- preExecute(discordBotToken)
       _ <- execute(jda)
-      _ <- postExecute()
+      _ <- postExecute(jda)
     } yield ()).foreverM
   }
 
@@ -34,5 +34,7 @@ object PingDaemon {
     })
   }
 
-  private def postExecute(): IO[Unit] = IO {}
+  private def postExecute(jda: JDA): IO[Unit] = IO {
+    jda.shutdown()
+  }
 }

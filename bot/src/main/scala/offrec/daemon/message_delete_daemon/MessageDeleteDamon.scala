@@ -19,7 +19,7 @@ object MessageDeleteDamon extends Logger {
           logger.error("Error occurred during message deletion process", e)
         }
       }
-      _ <- postExecute()
+      _ <- postExecute(jda)
     } yield ()).foreverM
   }
 
@@ -75,5 +75,7 @@ object MessageDeleteDamon extends Logger {
 
   }
 
-  private def postExecute(): IO[Unit] = IO {}
+  private def postExecute(jda: JDA): IO[Unit] = IO {
+    jda.shutdown()
+  }
 }
