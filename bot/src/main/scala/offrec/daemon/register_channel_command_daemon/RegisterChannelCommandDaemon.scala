@@ -17,7 +17,7 @@ object RegisterChannelCommandDaemon {
     } yield ()).foreverM
   }
 
-  private def preExecute(discordBotToken: String): IO[JDA] = IO {
+  private def preExecute(discordBotToken: String): IO[JDA] = IO.blocking {
     JDABuilder
       .createDefault(discordBotToken)
       .enableIntents(GatewayIntent.MESSAGE_CONTENT)
@@ -30,16 +30,16 @@ object RegisterChannelCommandDaemon {
   }
 
   private def execute(jda: JDA): IO[Boolean] = {
-    IO {
+    IO.blocking {
       jda.awaitShutdown()
-    }.guarantee(IO {
+    }.guarantee(IO.blocking {
       val client = jda.getHttpClient
       client.connectionPool.evictAll()
       client.dispatcher.executorService.shutdown()
     })
   }
 
-  private def postExecute(jda: JDA): IO[Unit] = IO {
+  private def postExecute(jda: JDA): IO[Unit] = IO.blocking {
     jda.shutdown()
   }
 }

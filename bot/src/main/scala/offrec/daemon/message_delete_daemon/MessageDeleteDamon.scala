@@ -23,12 +23,12 @@ object MessageDeleteDamon extends Logger {
     } yield ()).foreverM
   }
 
-  private def preExecute(discordBotToken: String): IO[JDA] = IO {
+  private def preExecute(discordBotToken: String): IO[JDA] = IO.blocking {
     JDABuilder.createDefault(discordBotToken).build().awaitReady()
   }
 
   private def execute(jda: JDA): IO[Unit] = {
-    val deleteTask = IO {
+    val deleteTask = IO.blocking {
       val rows = DB.readOnly { implicit s => MessageDeleteQueueReader.pendings(limit = 100) }
 
       if (rows.isEmpty) {
@@ -75,7 +75,7 @@ object MessageDeleteDamon extends Logger {
 
   }
 
-  private def postExecute(jda: JDA): IO[Unit] = IO {
+  private def postExecute(jda: JDA): IO[Unit] = IO.blocking {
     jda.shutdown()
   }
 }
