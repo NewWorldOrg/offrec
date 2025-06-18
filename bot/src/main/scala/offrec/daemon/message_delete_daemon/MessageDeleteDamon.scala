@@ -51,8 +51,7 @@ object MessageDeleteDamon extends Logger {
                 channel <- Option(guild.getChannelById(classOf[TextChannel], channelId))
               } yield {
                 messageIds.foreach { id =>
-                  channel.deleteMessageById(id).complete()
-                  Thread.sleep(250)
+                  channel.deleteMessageById(id).queue()
                 }
               }
             } match {
