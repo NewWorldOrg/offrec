@@ -31,7 +31,9 @@ object MessageDeleteDamon extends Logger {
     val deleteTask = IO {
       val rows = DB.readOnly { implicit s => MessageDeleteQueueReader.pendings(limit = 100) }
 
-      if (rows.isEmpty) {} else {
+      if (rows.isEmpty) {
+        logger.info("No pending messages to delete")
+      } else {
         logger.info("Deletion target messages retrieved", kv("count", rows.size))
 
         val groupedRows = rows
