@@ -51,7 +51,14 @@ object MessageDeleteDamon extends Logger {
                 guild <- Option(jda.getGuildById(guildId))
                 channel <- Option(guild.getChannelById(classOf[TextChannel], channelId))
               } yield {
-                channel.deleteMessagesByIds(messageIds).complete()
+                // メッセージが2件未満の場合は個別削除、それ以上は一括削除
+                if (messageIds.size < 2) {
+                  messageIds.forEach { messageId =>
+                    channel.deleteMessageById(messageId).complete()
+                  }
+                } else {
+                  channel.deleteMessagesByIds(messageIds).complete()
+                }
               }
             } match {
               case Left(e) =>
@@ -72,6 +79,7 @@ object MessageDeleteDamon extends Logger {
     val waitTask = IO.sleep(15.seconds)
 
     (deleteTask *> waitTask).foreverM
+
   }
 
   private def postExecute(): IO[Unit] = IO {}
