@@ -39,23 +39,23 @@ object MessageDeleteQueueWriter {
     }.batch(builder.batchParams: _*).apply()
   }
 
-  def markCompleted(queueIds: List[Long])(implicit session: DBSession): Int = {
+  def markCompleted(messageId: String)(implicit session: DBSession): Int = {
     val now = OffsetDateTime.now()
 
     sql"""
       UPDATE message_delete_queue
       SET status = 1, updated_at = ${now}
-      WHERE id IN (${queueIds})
+      WHERE message_id = ${messageId}
     """.update.apply()
   }
 
-  def markFailed(queueIds: List[Long])(implicit session: DBSession): Int = {
+  def markFailed(messageId: String)(implicit session: DBSession): Int = {
     val now = OffsetDateTime.now()
 
     sql"""
       UPDATE message_delete_queue
       SET status = 2, updated_at = ${now}
-      WHERE id IN (${queueIds})
+      WHERE message_id = ${messageId}
     """.update.apply()
   }
 }

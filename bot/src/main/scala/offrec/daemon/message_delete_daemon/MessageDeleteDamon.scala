@@ -8,7 +8,6 @@ import offrec.logging.Logger
 import scalikejdbc.DB
 
 import scala.concurrent.duration._
-import scala.jdk.CollectionConverters._
 import scala.util.control.Exception.allCatch
 
 object MessageDeleteDamon extends Logger {
@@ -44,28 +43,27 @@ object MessageDeleteDamon extends Logger {
         groupedRows.foreach { case (guildId, channels) =>
           channels.foreach { case (channelId, queues) =>
             val messageIds = queues.map(_.messageId)
-            val queueIds = queues.map(_.id)
 
-            allCatch.either {
-              for {
-                guild <- Option(jda.getGuildById(guildId))
-                channel <- Option(guild.getChannelById(classOf[TextChannel], channelId))
-              } yield {
-                messageIds.foreach { messageId =>
+            for {
+              guild <- Option(jda.getGuildById(guildId))
+              channel <- Option(guild.getChannelById(classOf[TextChannel], channelId))
+            } yield {
+              messageIds.foreach { messageId =>
+                allCatch.either {
                   channel.deleteMessageById(messageId).complete()
+                } match {
+                  case Left(e) =>
+                    logger.error("Failed to delete messages", kv("guildId", guildId), kv("channelId", channelId), kv("messageId", messageId), e)
+                    DB.localTx { implicit s =>
+                      MessageDeleteQueueWriter.markFailed(messageId)
+                    }
+                  case Right(_) =>
+                    logger.info("Messages deleted", kv("guildId", guildId), kv("channelId", channelId), kv("messageId", messageId))
+                    DB.localTx { implicit s =>
+                      MessageDeleteQueueWriter.markCompleted(messageId)
+                    }
                 }
               }
-            } match {
-              case Left(e) =>
-                logger.error("Failed to delete messages", kv("guildId", guildId), kv("channelId", channelId), kv("count", messageIds.size), e)
-                DB.localTx { implicit s =>
-                  MessageDeleteQueueWriter.markFailed(queueIds)
-                }
-              case Right(_) =>
-                logger.info("Messages deleted", kv("guildId", guildId), kv("channelId", channelId), kv("count", messageIds.size))
-                DB.localTx { implicit s =>
-                  MessageDeleteQueueWriter.markCompleted(queueIds)
-                }
             }
           }
         }
