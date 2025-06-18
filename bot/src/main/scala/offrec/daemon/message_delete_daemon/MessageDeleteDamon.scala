@@ -43,7 +43,7 @@ object MessageDeleteDamon extends Logger {
 
         groupedRows.foreach { case (guildId, channels) =>
           channels.foreach { case (channelId, queues) =>
-            val messageIds = queues.map(_.messageId).asJava
+            val messageIds = queues.map(_.messageId)
             val queueIds = queues.map(_.id)
 
             allCatch.either {
@@ -51,13 +51,8 @@ object MessageDeleteDamon extends Logger {
                 guild <- Option(jda.getGuildById(guildId))
                 channel <- Option(guild.getChannelById(classOf[TextChannel], channelId))
               } yield {
-                // メッセージが2件未満の場合は個別削除、それ以上は一括削除
-                if (messageIds.size < 2) {
-                  messageIds.forEach { messageId =>
-                    channel.deleteMessageById(messageId).complete()
-                  }
-                } else {
-                  channel.deleteMessagesByIds(messageIds).complete()
+                messageIds.foreach { messageId =>
+                  channel.deleteMessageById(messageId).complete()
                 }
               }
             } match {
